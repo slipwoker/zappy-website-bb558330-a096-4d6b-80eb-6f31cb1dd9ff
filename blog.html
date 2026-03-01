@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <title>Game Dev Insights &amp; Chaotic Creativity — SJohnson</title>
+    <meta name="description" content="Read katherine s johnson&#39;s unfiltered thoughts on indie game development. Raw tutorials, design experiments, and the messy reality of making games solo.">
+    <meta name="keywords" content="katherine s johnson, indie game development blog, game dev tutorials, SJohnson, indie developer insights">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon-512x512.png">
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+    <!-- Zappy Analytics -->
+<script>
+(function() {
+  'use strict';
+  
+  // Configuration
+  var config = {
+    websiteId: 'bb558330-a096-4d6b-80eb-6f31cb1dd9ff',
+    apiUrl: 'https://api.zappy5.com/api/analytics/track',
+    sessionDuration: 30 * 60 * 1000, // 30 minutes
+    visitorDuration: 30 * 24 * 60 * 60 * 1000, // 30 days
+    trackPageViews: true,
+    trackClicks: true,
+    trackFormSubmissions: true
+  };
+  
+  // Generate or retrieve persistent visitor ID (30 days)
+  function getVisitorId() {
+    var visitorKey = 'zappy_visitor_' + config.websiteId;
+    var visitor = null;
+    
+    try {
+      visitor = localStorage.getItem(visitorKey);
+      if (visitor) {
+        var visitorData = JSON.parse(visitor);
+        var now = Date.now();
+        
+        // Check if visitor ID is still valid (30 days)
+        if (now - visitorData.created < config.visitorDuration) {
+          // Update last seen timestamp
+          visitorData.lastSeen = now;
+          localStorage.setItem(visitorKey, JSON.stringify(visitorData));
+          return visitorData.id;
+        }
+      }
+    } catch (e) {
+      console.warn('Zappy Analytics: LocalStorage not available');
+    }
+    
+    // Generate new visitor ID
+    var newVisitorId = 'zv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    try {
+      localStorage.setItem(visitorKey, JSON.stringify({
+        id: newVisitorId,
+        created: Date.now(),
+        lastSeen: Date.now()
+      }));
+    } catch (e) {
+      // Continue without local storage
+    }
+    
+    return newVisitorId;
+  }
+  
+  // Generate or retrieve session ID (30 minutes)
+  function getSessionId() {
+    var sessionKey = 'zappy_session_' + config.websiteId;
+    var session = null;
+    
+    try {
+      session = sessionStorage.getItem(sessionKey);
+      if (session) {
+        var sessionData = JSON.parse(session);
+        var now = Date.now();
+        
+        // Check if session is still valid
+        if (now - sessionData.timestamp < config.sessionDuration) {
+          // Update timestamp
+          sessionData.timestamp = now;
+          sessionStorage.setItem(sessionKey, JSON.stringify(sessionData));
+          return sessionData.id;
+        }
+      }
+    } catch (e) {
+      console.warn('Zappy Analytics: SessionStorage not available');
+    }
+    
+    // Generate new session ID
+    var newSessionId = 'zs_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    try {
+      sessionStorage.setItem(sessionKey, JSON.stringify({
+        id: newSessionId,
+        timestamp: Date.now()
+      }));
+    } catch (e) {
+      // Continue without session storage
+    }
+    
+    return newSessionId;
+  }
+  
+  var visitorId = getVisitorId();
+  var sessionId = getSessionId();
+  
+  // Track an event
+  function trackEvent(eventType, data) {
+    data = data || {};
+    
+    var eventData = {
+      website_id: config.websiteId,
+      event_type: eventType,
+      page_path: window.location.pathname,
+      referrer: document.referrer || 'direct',
+      visitor_id: visitorId,
+      session_id: sessionId,
+      metadata: data
+    };
+    
+    // Use sendBeacon if available (better for page unload events)
+    if (navigator.sendBeacon) {
+      var blob = new Blob([JSON.stringify(eventData)], { type: 'application/json' });
+      navigator.sendBeacon(config.apiUrl, blob);
+    } else {
+      // Fallback to fetch
+      fetch(config.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(eventData),
+        keepalive: true
+      }).catch(function(error) {
+        console.warn('Zappy Analytics: Failed to track event', error);
+      });
+    }
+  }
+  
+  // Track page view
+  if (config.trackPageViews) {
+    trackEvent('pageview', {
+      title: document.title,
+      url: window.location.href
+    });
+  }
+  
+  // Track clicks on important elements
+  if (config.trackClicks) {
+    document.addEventListener('click', function(e) {
+      var target = e.target;
+      
+      // Track button clicks (counted as actions)
+      if (target.tagName === 'BUTTON' || target.closest('button')) {
+        var button = target.tagName === 'BUTTON' ? target : target.closest('button');
+        trackEvent('click', {
+          element: 'button',
+          text: button.textContent.trim().substring(0, 100),
+          id: button.id || null,
+          class: button.className || null
+        });
+      }
+      
+      // Track link clicks (navigation - not counted as actions)
+      else if (target.tagName === 'A' || target.closest('a')) {
+        var link = target.tagName === 'A' ? target : target.closest('a');
+        trackEvent('navigation', {
+          element: 'link',
+          text: link.textContent.trim().substring(0, 100),
+          href: link.href,
+          external: link.hostname !== window.location.hostname
+        });
+      }
+    }, true);
+  }
+  
+  // Track form submissions
+  if (config.trackFormSubmissions) {
+    document.addEventListener('submit', function(e) {
+      var form = e.target;
+      
+      trackEvent('form_submit', {
+        form_id: form.id || null,
+        form_name: form.name || null,
+        form_action: form.action || null,
+        form_method: form.method || 'GET'
+      });
+    }, true);
+  }
+  
+  // Track time on page (send on page unload)
+  var pageLoadTime = Date.now();
+  
+  window.addEventListener('beforeunload', function() {
+    var timeOnPage = Math.floor((Date.now() - pageLoadTime) / 1000); // in seconds
+    
+    trackEvent('page_unload', {
+      time_on_page: timeOnPage,
+      page_path: window.location.pathname
+    });
+  });
+  
+  // Expose tracking function globally for custom events
+  window.zappyAnalytics = {
+    track: trackEvent,
+    getVisitorId: function() { return visitorId; },
+    getSessionId: function() { return sessionId; }
+  };
+  
+})();
+</script>
+<!-- End Zappy Analytics -->
+    <meta property="og:title" content="Game Dev Insights &amp; Chaotic Creativity — SJohnson">
+  <meta property="og:description" content="Read katherine s johnson's unfiltered thoughts on indie game development. Raw tutorials, design experiments, and the messy reality of making games solo.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en_US">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Game Dev Insights &amp; Chaotic Creativity — SJohnson">
+  <meta name="twitter:description" content="Read katherine s johnson's unfiltered thoughts on indie game development. Raw tutorials, design experiments, and the messy reality of making games solo.">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon-512x512.png">
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+    <!-- Cookie Consent -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanilla-cookieconsent@3/dist/cookieconsent.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-cookieconsent@3/dist/cookieconsent.umd.js"></script>
+    <!-- Mickidum Accessibility Toolbar -->
+    <script src="https://cdn.jsdelivr.net/gh/mickidum/acc_toolbar/acctoolbar/acctoolbar.min.js"></script>
+    <link rel="stylesheet" href="/styles.css">
+
+    <style id="zappy-dropdown-submenu-styles">
+      /* ========== DESKTOP DROPDOWN SUBMENU STYLES ========== */
+      /* Base styles for dropdown submenus - parent must be positioned */
+      .nav-menu li:has(.sub-menu), nav li:has(.sub-menu), .navbar li:has(.sub-menu), #navMenu li:has(.sub-menu) { position: relative; }
+      /* Submenu base - hidden by default */
+      .nav-menu .sub-menu, nav .sub-menu, .navbar .sub-menu, #navMenu .sub-menu { display: block !important; position: absolute !important; top: 100%; left: 0; min-width: 220px; background: white; border-radius: 8px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); padding: 8px 0; opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s ease; z-index: 1000; list-style: none; pointer-events: none; }
+      /* CRITICAL: Desktop hover styles to show dropdown */
+      .nav-menu li:hover > .sub-menu, nav li:hover > .sub-menu, .navbar li:hover > .sub-menu, #navMenu li:hover > .sub-menu { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; pointer-events: auto !important; }
+      /* Submenu item styling */
+      .sub-menu li { list-style: none; margin: 0; padding: 0; }
+      .sub-menu a { display: block !important; padding: 10px 16px !important; color: #333 !important; font-weight: 500; text-decoration: none; white-space: nowrap; transition: background-color 0.2s; }
+      .sub-menu a:hover { background-color: #f5f5f5; }
+      /* RTL (Hebrew/Arabic) dropdown positioning */
+      [dir="rtl"] .nav-menu .sub-menu, [dir="rtl"] nav .sub-menu, [dir="rtl"] .navbar .sub-menu, html[lang="he"] .nav-menu .sub-menu, html[lang="he"] nav .sub-menu, html[lang="he"] .navbar .sub-menu, html[lang="ar"] .nav-menu .sub-menu, html[lang="ar"] nav .sub-menu, html[lang="ar"] .navbar .sub-menu { left: auto !important; right: 0 !important; }
+      /* Hide empty dropdown menus */
+      .sub-menu:empty, .sub-menu:not(:has(li:not(.zappy-hidden-menu-item))), .sub-menu:not(:has(li)) { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+      /* Desktop: show submenu on Menu Group hover */
+      li:has(.menu-group-title):hover > .sub-menu { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; pointer-events: auto !important; }
+      /* Menu Group title styling */
+      .nav-menu > li > .menu-group-title, #navMenu > li > .menu-group-title { display: inline-block; padding: 0.5rem 1rem; cursor: default; user-select: none; }
+      
+      /* ========== MOBILE SUBMENU STYLES ========== */
+      @media (max-width: 768px) {
+        .nav-menu .sub-menu, nav .sub-menu, .navbar .sub-menu, #navMenu .sub-menu { position: static !important; transform: none !important; box-shadow: none !important; background: transparent !important; max-height: 0; overflow: hidden; opacity: 0; visibility: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; padding: 0 !important; border-radius: 0 !important; }
+        .sub-menu.mobile-expanded { max-height: 500px !important; opacity: 1 !important; visibility: visible !important; padding: 8px 0 8px 16px !important; }
+        [dir="rtl"] .sub-menu.mobile-expanded, html[lang="he"] .sub-menu.mobile-expanded { padding: 8px 16px 8px 0 !important; }
+        /* Disable hover behavior on mobile */
+        .nav-menu li:hover > .sub-menu, nav li:hover > .sub-menu, .navbar li:hover > .sub-menu, #navMenu li:hover > .sub-menu { opacity: 0; visibility: hidden; pointer-events: none; }
+        .nav-menu li > .sub-menu.mobile-expanded, nav li > .sub-menu.mobile-expanded, .navbar li > .sub-menu.mobile-expanded, #navMenu li > .sub-menu.mobile-expanded { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; }
+        .nav-menu li:has(.sub-menu), nav li:has(.sub-menu), .navbar li:has(.sub-menu), #navMenu li:has(.sub-menu) { display: flex !important; flex-wrap: wrap !important; align-items: center !important; position: relative !important; min-height: 44px !important; }
+        .nav-menu li:has(.sub-menu) > a, nav li:has(.sub-menu) > a, .navbar li:has(.sub-menu) > a, #navMenu li:has(.sub-menu) > a { flex: 1 !important; min-width: 0 !important; }
+        .nav-menu li:has(.sub-menu) > .menu-group-title, nav li:has(.sub-menu) > .menu-group-title, .navbar li:has(.sub-menu) > .menu-group-title, #navMenu li:has(.sub-menu) > .menu-group-title { flex: 1 !important; min-width: 0 !important; padding: 0 !important; line-height: inherit !important; }
+        .nav-menu li:has(.sub-menu) > .sub-menu, nav li:has(.sub-menu) > .sub-menu, .navbar li:has(.sub-menu) > .sub-menu, #navMenu li:has(.sub-menu) > .sub-menu { flex-basis: 100% !important; width: 100% !important; }
+        .nav-menu li:has(.sub-menu) > a [class*="chevron"], .nav-menu li:has(.sub-menu) > a [class*="arrow"], .nav-menu li:has(.sub-menu) > a .fa-chevron-down, .nav-menu li:has(.sub-menu) > a .fa-angle-down, nav li:has(.sub-menu) > a [class*="chevron"], nav li:has(.sub-menu) > a [class*="arrow"], #navMenu li:has(.sub-menu) > a [class*="chevron"], #navMenu li:has(.sub-menu) > a [class*="arrow"] { display: none !important; visibility: hidden !important; }
+        .mobile-submenu-toggle { display: flex !important; align-items: center !important; justify-content: center !important; width: 44px !important; height: auto !important; background: transparent !important; border: none !important; cursor: pointer !important; color: var(--text-dark) !important; position: static !important; flex-shrink: 0 !important; align-self: stretch !important; z-index: 2 !important; padding: 0 !important; margin: 0 !important; }
+        .mobile-submenu-toggle::after { content: '' !important; width: 0 !important; height: 0 !important; border-left: 6px solid transparent !important; border-right: 6px solid transparent !important; border-top: 7px solid currentColor !important; transition: transform 0.3s ease !important; }
+        .mobile-submenu-toggle.expanded::after { transform: rotate(180deg) !important; }
+        .sub-menu a { padding: 10px 0 !important; display: block !important; color: var(--text-dark) !important; }
+        .navbar .sub-menu li a, nav.navbar .sub-menu li a, .zappy-products-dropdown .sub-menu a { color: var(--text-dark) !important; }
+      }
+      @media (min-width: 769px) { .mobile-submenu-toggle { display: none !important; } }
+    </style>
+
+    <style id="zappy-widget-visibility">
+      #mic-access-tool-general-button, .mic-access-tool-general-button,
+      #mic-init-access-tool .mic-access-tool-general-button, #mic-init-access-tool #mic-access-tool-general-button,
+      ._access-icon, #mic-access-tool-box, .mic-access-tool-box,
+      #mic-init-access-tool #mic-access-tool-box, div[id*="mic-access-tool-box"], ._access-menu {
+        display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;
+      }
+    </style>
+</head>
+<body>
+
+  <nav class="navbar">
+  <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+    <svg class="hamburger-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+    </svg>
+    <svg class="close-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" style="display:none;">
+      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+    </svg>
+  </button>
+  
+  <button class="phone-header-btn" aria-label="Call">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+    </svg>
+  </button>
+  
+  <div class="nav-container">
+    <div class="nav-brand">
+      <a href="/" class="logo-link">
+        <img src="/assets/sjohnson-indie-game-development-logo.webp" alt="SJohnson" class="logo" />
+      </a>
+    </div>
+    
+    <ul class="nav-menu" id="navMenu"><li><a href="/blog">Blog</a></li><li><a href="/about">About</a></li></ul>
+    
+    <div class="nav-cta-container">
+      <a href="/contact" class="nav-cta-btn">Contact</a>
+    </div>
+  </div>
+</nav>
+  
+  <main>
+    <section class="blog-intro-section" data-layout-spec="Blog-intro">
+  <div class="blog-intro-container">
+    <div class="blog-intro-content">
+      <h1>Dev Journal: Unfiltered &amp; In-Progress</h1>
+      <p>Welcome to the raw, honest feed from the trenches of indie game development. Here you'll find design opinions that might change tomorrow, small experiments that sometimes work, and updates on projects as they evolve—not after they're polished. This is where ideas get tested in public and imperfect progress gets celebrated.</p>
+      <p>Expect candid thoughts on game mechanics, art direction pivots, technical hiccups, and the occasional existential crisis about whether that feature really needs to ship. If you're looking for glossy press releases, this isn't it. If you want to see how the sausage gets made (quirks and all), you're in the right place.</p>
+      
+      <div class="blog-intro-note">
+        <p><strong>Posting cadence:</strong> Whenever there's something worth sharing—could be weekly during active dev sprints, could be radio silence during deep work phases. Scope includes game design thoughts, dev logs, tool experiments, and the occasional rant about why physics engines are both amazing and terrible. Shipping imperfectly and learning in public is the whole point.</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="blog-intro-divider-wrapper">
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,60 L0,30 Q15,28 30,32 Q45,35 60,30 Q75,26 90,31 Q105,36 120,29 Q135,24 150,30 Q165,35 180,28 Q195,23 210,31 Q225,37 240,30 Q255,25 270,32 Q285,38 300,29 Q315,22 330,31 Q345,39 360,30 Q375,24 390,33 Q405,40 420,31 Q435,25 450,34 Q465,41 480,32 Q495,26 510,35 Q525,42 540,33 Q555,27 570,36 Q585,43 600,34 Q615,28 630,37 Q645,44 660,35 Q675,29 690,38 Q705,45 720,36 Q735,30 750,39 Q765,46 780,37 Q795,31 810,40 Q825,47 840,38 Q855,32 870,41 Q885,48 900,39 Q915,33 930,42 Q945,49 960,40 Q975,34 990,43 Q1005,50 1020,41 Q1035,35 1050,44 Q1065,51 1080,42 Q1095,36 1110,45 Q1125,52 1140,43 Q1155,37 1170,46 Q1185,53 1200,44 L1200,60 Z" fill="var(--border-light)" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.6"></path>
+    </svg>
+  </div>
+</section>
+
+<section class="blog-post-list-section" data-layout-spec="Blog-post-list">
+  <div class="blog-post-list-container">
+    <div class="blog-post-list-header">
+      <h2>Latest Updates</h2>
+      <p class="blog-post-list-subtitle">Quirky insights from the indie game development trenches</p>
+    </div>
+
+    <div class="blog-post-list-grid">
+      <!-- Post 1 -->
+      <article class="blog-post-item">
+        <div class="blog-post-content">
+          <h3><a href="#">Why My First Game Crashed 47 Times (And That's Okay)</a></h3>
+          <p>Building your first indie game is like learning to ride a bike while the bike is on fire. I spent three months debugging a collision system that turned out to be a single misplaced semicolon. Here's what I learned about embracing the chaos of indie game development and why every crash taught me something valuable.</p>
+          <div class="blog-post-meta">
+            <span class="blog-post-date">March 15, 2024</span>
+            <span class="blog-post-category">Development</span>
+          </div>
+        </div>
+        <div class="blog-post-thumbnail">
+          <img data-placeholder="blog-post-list-image-1" data-context="Computer screen showing game development code editor with visible bug errors and crash logs, indie game developer workspace with coffee mug and notes scattered around, warm desk lamp lighting, authentic messy developer environment" width="280" height="200" src="/assets/site-blog-post-list-image-1.webp" alt="Game development debugging session">
+        </div>
+      </article>
+
+      <!-- Post 2 -->
+      <article class="blog-post-item">
+        <div class="blog-post-content">
+          <h3><a href="#">The Art of Terrible Placeholder Graphics</a></h3>
+          <p>My early prototypes looked like they were designed by a colorblind octopus with a broken crayon. But those ugly placeholder sprites taught me more about game design than any polished asset ever could. Sometimes you need to embrace the crude to find the creative core of your game mechanics.</p>
+          <div class="blog-post-meta">
+            <span class="blog-post-date">March 8, 2024</span>
+            <span class="blog-post-category">Design</span>
+          </div>
+        </div>
+        <div class="blog-post-thumbnail">
+          <img data-placeholder="blog-post-list-image-2" data-context="Rough sketches and placeholder game sprites on graph paper, simple geometric shapes and stick figures representing game characters, pencil drawings with coffee stains, authentic indie game concept art process" width="280" height="200" src="/assets/site-blog-post-list-image-2.webp" alt="Early game design sketches and placeholder graphics">
+        </div>
+      </article>
+
+      <!-- Post 3 -->
+      <article class="blog-post-item">
+        <div class="blog-post-content">
+          <h3><a href="#">Solo Development: Talking to Rubber Ducks</a></h3>
+          <p>When you're the only person on your team, you get creative with problem-solving. I've explained complex game logic to houseplants, debugged code by describing it to my cat, and once solved a pathfinding issue by acting it out with action figures. Welcome to the glamorous world of solo indie game development.</p>
+          <div class="blog-post-meta">
+            <span class="blog-post-date">February 28, 2024</span>
+            <span class="blog-post-category">Workflow</span>
+          </div>
+        </div>
+        <div class="blog-post-thumbnail">
+          <img data-placeholder="blog-post-list-image-3" data-context="Indie game developer working alone at desk with rubber duck debugging companion, laptop showing game code, sticky notes on monitor, cozy home office setup with plants, natural window lighting" width="280" height="200" src="/assets/site-blog-post-list-image-3.webp" alt="Solo indie game developer workspace">
+        </div>
+      </article>
+
+      <!-- Post 4 -->
+      <article class="blog-post-item">
+        <div class="blog-post-content">
+          <h3><a href="#">When Players Break Your Game in Ways You Never Imagined</a></h3>
+          <p>Released my first public demo and within 20 minutes, players discovered you could clip through walls by jumping backwards while crouching. They turned my serious adventure game into a speedrunning competition. The best part? Their creative chaos showed me mechanics I never knew existed in my own code.</p>
+          <div class="blog-post-meta">
+            <span class="blog-post-date">February 21, 2024</span>
+            <span class="blog-post-category">Playtesting</span>
+          </div>
+        </div>
+        <div class="blog-post-thumbnail">
+          <img data-placeholder="blog-post-list-image-4" data-context="Game screenshot showing player character glitching through wall, humorous game bug moment, indie game with quirky graphics, colorful pixel art or low-poly style game environment" width="280" height="200" src="/assets/site-blog-post-list-image-4.webp" alt="Game glitch and player exploitation">
+        </div>
+      </article>
+
+      <!-- Post 5 -->
+      <article class="blog-post-item">
+        <div class="blog-post-content">
+          <h3><a href="#">Budget Audio Design: Kitchen Utensils as Sound Effects</a></h3>
+          <p>Can't afford professional sound design? Neither could I. My sword-fighting sounds came from hitting wooden spoons together, footsteps were recorded by walking on bubble wrap, and that epic explosion? A bag of chips crushed near a microphone. Indie game audio development gets weird, and I love it.</p>
+          <div class="blog-post-meta">
+            <span class="blog-post-date">February 14, 2024</span>
+            <span class="blog-post-category">Audio</span>
+          </div>
+        </div>
+        <div class="blog-post-thumbnail">
+          <img data-placeholder="blog-post-list-image-5" data-context="Kitchen counter with various utensils and household objects used for game sound effects recording, microphone setup with pots and pans, creative DIY audio recording session for indie games" width="280" height="200" src="/assets/site-blog-post-list-image-5.webp" alt="DIY game sound effects recording setup">
+        </div>
+      </article>
+
+      <!-- Post 6 -->
+      <article class="blog-post-item">
+        <div class="blog-post-content">
+          <h3><a href="#">The 3 AM Breakthrough: Why Exhaustion Breeds Innovation</a></h3>
+          <p>Something magical happens when you've been coding for 14 hours straight and your brain stops working normally. That's when I accidentally invented my game's signature mechanic – by mistyping a variable name and creating the weirdest physics glitch that somehow became the core gameplay loop. Sleep deprivation: not recommended, but occasionally brilliant.</p>
+          <div class="blog-post-meta">
+            <span class="blog-post-date">February 7, 2024</span>
+            <span class="blog-post-category">Inspiration</span>
+          </div>
+        </div>
+        <div class="blog-post-thumbnail">
+          <img data-placeholder="blog-post-list-image-6" data-context="Late night game development session, laptop glowing in dark room at 3am, empty coffee cups and energy drink cans, tired but focused indie developer coding environment, dim desk lamp" width="280" height="200" src="/assets/site-blog-post-list-image-6.webp" alt="Late night indie game development session">
+        </div>
+      </article>
+
+      <!-- Post 7 -->
+      <article class="blog-post-item">
+        <div class="blog-post-content">
+          <h3><a href="#">Marketing for Introverts: My Steam Page Has More Friends Than I Do</a></h3>
+          <p>Promoting your game when you'd rather hide in a cave and code is a special kind of torture. I've mastered the art of scheduling social media posts weeks in advance so I never have to actually interact in real-time. My Steam wishlist count is growing faster than my real-life social circle, and honestly, I'm okay with that.</p>
+          <div class="blog-post-meta">
+            <span class="blog-post-date">January 31, 2024</span>
+            <span class="blog-post-category">Marketing</span>
+          </div>
+        </div>
+        <div class="blog-post-thumbnail">
+          <img data-placeholder="blog-post-list-image-7" data-context="Computer screen showing Steam game page with wishlist notifications, indie game marketing dashboard, social media scheduling tools open, cozy home office with developer avoiding camera" width="280" height="200" src="/assets/site-blog-post-list-image-7.webp" alt="Indie game marketing and Steam page management">
+        </div>
+      </article>
+
+      <!-- Post 8 -->
+      <article class="blog-post-item">
+        <div class="blog-post-content">
+          <h3><a href="#">Version Control Disasters and How I Lost Two Weeks of Work</a></h3>
+          <p>Let me tell you about the time I confidently clicked "force push" without backing up my local changes first. Two weeks of carefully crafted game mechanics vanished into the digital void. I cried, I raged, I learned about proper Git workflows. Now I backup everything three times and still have nightmares about merge conflicts.</p>
+          <div class="blog-post-meta">
+            <span class="blog-post-date">January 24, 2024</span>
+            <span class="blog-post-category">Lessons Learned</span>
+          </div>
+        </div>
+        <div class="blog-post-thumbnail">
+          <img data-placeholder="blog-post-list-image-8" data-context="Computer screen showing Git version control error message, merge conflict notification, frustrated indie game developer hands on head, multiple backup hard drives visible on desk" width="280" height="200" src="/assets/site-blog-post-list-image-8.webp" alt="Version control disaster and backup systems">
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <!-- Bottom Divider with Controller Doodles -->
+  <div class="blog-post-list-divider-wrapper">
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Dotted rule line -->
+      <line x1="0" y1="20" x2="1200" y2="20" stroke="currentColor" stroke-width="2" stroke-dasharray="6 8" opacity="0.3"></line>
+      
+      <!-- Controller doodle icons spaced evenly -->
+      <g transform="translate(200, 20)">
+        <circle cx="0" cy="0" r="12" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"></circle>
+        <rect x="-6" y="-3" width="5" height="6" rx="1" fill="currentColor" opacity="0.4"></rect>
+        <rect x="1" y="-3" width="5" height="6" rx="1" fill="currentColor" opacity="0.4"></rect>
+      </g>
+      
+      <g transform="translate(600, 20)">
+        <circle cx="0" cy="0" r="12" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"></circle>
+        <circle cx="-4" cy="0" r="2" fill="currentColor" opacity="0.4"></circle>
+        <circle cx="4" cy="0" r="2" fill="currentColor" opacity="0.4"></circle>
+        <path d="M -2,-4 L 2,-4" stroke="currentColor" stroke-width="1.5" opacity="0.4"></path>
+      </g>
+      
+      <g transform="translate(1000, 20)">
+        <circle cx="0" cy="0" r="12" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"></circle>
+        <rect x="-6" y="-3" width="5" height="6" rx="1" fill="currentColor" opacity="0.4"></rect>
+        <rect x="1" y="-3" width="5" height="6" rx="1" fill="currentColor" opacity="0.4"></rect>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<section class="blog-series-spotlight-section" data-layout-spec="Blog-series-spotlight">
+  <div class="blog-series-spotlight-container">
+    <div class="blog-series-spotlight-content">
+      <div class="blog-series-spotlight-text-column">
+        <h2>Series to start with</h2>
+        <p class="blog-series-spotlight-intro">New to the blog? These series collections offer the best entry points into my quirky indie game development journey. Each one explores a different facet of building unconventional games with personality.</p>
+        
+        <div class="blog-series-spotlight-modules">
+          <article class="blog-series-spotlight-module">
+            <h3>Building a Quirky Combat System</h3>
+            <p>Dive into the chaotic physics and unexpected interactions that make combat feel unpredictable and fun. Learn how I embraced the glitches and turned them into features.</p>
+          </article>
+          
+          <article class="blog-series-spotlight-module">
+            <h3>Animation &amp; Physics Experiments</h3>
+            <p>Follow along as I test wild animation ideas and physics tweaks that shouldn't work—but somehow do. Lots of trial, error, and happy accidents documented here.</p>
+          </article>
+          
+          <article class="blog-series-spotlight-module">
+            <h3>Postmortems of Small Releases</h3>
+            <p>Honest reflections on what went right, what went hilariously wrong, and what I learned from shipping scrappy little games into the wild.</p>
+          </article>
+        </div>
+      </div>
+      
+      <div class="blog-series-spotlight-image-column">
+        <div class="blog-series-spotlight-image-frame">
+          <img data-placeholder="blog-series-spotlight-image-1" data-context="A creative indie game developer workspace showing a whiteboard covered with game design sketches, sticky notes with quirky ideas, and a sketchbook with character doodles. The scene should feel authentic and unpolished, capturing the raw creative process of indie game development. Bright, natural lighting with a clean aesthetic." width="600" height="800" src="/assets/site-blog-series-spotlight-image-1.webp" alt="Indie game development workspace with sketches and notes">
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="blog-series-spotlight-divider-wrapper">
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="notch-clip">
+          <rect x="0" y="0" width="1200" height="40"></rect>
+          <circle cx="30" cy="40" r="8"></circle>
+          <circle cx="90" cy="40" r="8"></circle>
+          <circle cx="150" cy="40" r="8"></circle>
+          <circle cx="210" cy="40" r="8"></circle>
+          <circle cx="270" cy="40" r="8"></circle>
+          <circle cx="330" cy="40" r="8"></circle>
+          <circle cx="390" cy="40" r="8"></circle>
+          <circle cx="450" cy="40" r="8"></circle>
+          <circle cx="510" cy="40" r="8"></circle>
+          <circle cx="570" cy="40" r="8"></circle>
+          <circle cx="630" cy="40" r="8"></circle>
+          <circle cx="690" cy="40" r="8"></circle>
+          <circle cx="750" cy="40" r="8"></circle>
+          <circle cx="810" cy="40" r="8"></circle>
+          <circle cx="870" cy="40" r="8"></circle>
+          <circle cx="930" cy="40" r="8"></circle>
+          <circle cx="990" cy="40" r="8"></circle>
+          <circle cx="1050" cy="40" r="8"></circle>
+          <circle cx="1110" cy="40" r="8"></circle>
+          <circle cx="1170" cy="40" r="8"></circle>
+        </clipPath>
+      </defs>
+      <rect x="0" y="0" width="1200" height="40" fill="var(--bg-dark)" clip-path="url(#notch-clip)"></rect>
+    </svg>
+  </div>
+</section>
+
+<section class="blog-contact-cta-section" data-layout-spec="Blog-contact-cta">
+  <div class="blog-contact-cta-container">
+    <h2>Got a Wild Idea or Just Want to Chat?</h2>
+    <p>Whether it's feedback on a game, a collaboration pitch, or just sharing your own indie journey—I'd love to hear from you. Real talk, no corporate fluff.</p>
+    <a href="/contact" class="blog-contact-cta-button">Contact</a>
+  </div>
+</section>
+  </main>
+  
+  <footer class="site-footer"><div class="footer-container"><div class="footer-top"><div class="footer-column footer-about"><img src="/assets/sjohnson-indie-game-development-logo.webp" alt="SJohnson" class="logo" /><p class="footer-description">Creating unique indie games with passion and creativity. Join us on our journey to bring innovative gaming experiences to life.</p></div><div class="footer-column footer-links"><h3 class="footer-heading">Quick Links</h3><ul class="footer-nav"><li><a href="/blog">Blog</a></li><li><a href="/about">About</a></li><li><a href="/contact">Contact</a></li></ul></div><div class="footer-column footer-contact"><h3 class="footer-heading">Contact Us</h3><ul class="contact-list"><li><a href="/"><i class="fas fa-envelope"></i><span>[business_email]</span></a></li><li><a href="/"><i class="fas fa-phone"></i><span>[business_phone]</span></a></li><li><a href="/"><i class="fas fa-map-marker-alt"></i><span>[business_address]</span></a></li></ul></div><div class="footer-column footer-social"><h3 class="footer-heading">Follow Us</h3><div class="social-links"><a href="[facebook_handle]" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a><a href="[instagram_handle]" aria-label="Instagram"><i class="fab fa-instagram"></i></a><a href="[whatsapp_handle]" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a></div></div></div><div class="footer-bottom"><div class="footer-bottom-left"><p class="copyright">© 2026 SJohnson. All rights reserved.</p></div><div class="footer-bottom-right"><ul class="legal-links"><li><a href="/privacy">Privacy Policy</a></li><li><a href="/terms">Terms &amp; Conditions</a></li><li><a href="/accessibility">Accessibility</a></li></ul><a href="https://zappy5.com" target="_blank" class="zappy-attribution">Generated by Zappy</a></div></div></div></footer>
+  
+  <a href="https://wa.me/[whatsapp_handle]" class="whatsapp-float" aria-label="WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+  
+  <div data-integration="accessibility:toolbar"></div>
+
+    <script src="/script.js"></script>
+
+    <script id="zappy-mobile-submenu-script">
+    (function() {
+      function initMobileSubmenuToggles() {
+        if (window.innerWidth > 768) {
+          document.querySelectorAll('.mobile-submenu-toggle').forEach(function(btn) { btn.remove(); });
+          document.querySelectorAll('.sub-menu.mobile-expanded').forEach(function(menu) { menu.classList.remove('mobile-expanded'); });
+          return;
+        }
+        var items = document.querySelectorAll('.nav-menu li:has(.sub-menu), nav li:has(.sub-menu), .navbar li:has(.sub-menu), #navMenu li:has(.sub-menu)');
+        items.forEach(function(li) {
+          if (li.querySelector('.mobile-submenu-toggle')) return;
+          var submenu = li.querySelector('.sub-menu');
+          var parentLink = li.querySelector(':scope > a');
+          if (!submenu || !parentLink) return;
+          var toggleBtn = document.createElement('button');
+          toggleBtn.className = 'mobile-submenu-toggle';
+          toggleBtn.setAttribute('aria-label', 'Toggle submenu');
+          toggleBtn.setAttribute('type', 'button');
+          parentLink.insertAdjacentElement('afterend', toggleBtn);
+          toggleBtn.addEventListener('click', function(e) {
+            e.preventDefault(); e.stopPropagation();
+            document.querySelectorAll('.sub-menu.mobile-expanded').forEach(function(menu) {
+              if (menu !== submenu) { menu.classList.remove('mobile-expanded'); var t = menu.parentElement.querySelector('.mobile-submenu-toggle'); if(t) t.classList.remove('expanded'); }
+            });
+            submenu.classList.toggle('mobile-expanded');
+            toggleBtn.classList.toggle('expanded');
+          });
+        });
+      }
+      if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMobileSubmenuToggles); }
+      else { initMobileSubmenuToggles(); }
+      var resizeTimer; window.addEventListener('resize', function() { clearTimeout(resizeTimer); resizeTimer = setTimeout(initMobileSubmenuToggles, 250); });
+      // Re-initialize when mobile menu becomes visible (MutationObserver)
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'attributes') {
+            var target = mutation.target;
+            if (target.classList && (target.classList.contains('active') || target.classList.contains('open'))) {
+              setTimeout(initMobileSubmenuToggles, 100);
+            }
+          }
+        });
+      });
+      setTimeout(function() {
+        document.querySelectorAll('.mobile-menu, .nav-menu, #navMenu, nav').forEach(function(menu) {
+          observer.observe(menu, { attributes: true, attributeFilter: ['class', 'style'] });
+        });
+      }, 500);
+    })();
+    </script>
+
+    <script id="zappy-navbar-scroll-effect">
+    (function(){var nb=document.querySelector('nav.navbar,.navbar:not(.zappy-catalog-menu)');var cm=document.querySelector('.zappy-catalog-menu');if(!nb)return;var fb='rgba(15,17,21,0.85)';var th=60;nb.style.transition='background 0.3s ease,backdrop-filter 0.3s ease,-webkit-backdrop-filter 0.3s ease,box-shadow 0.3s ease';if(cm)cm.style.transition='background 0.3s ease,backdrop-filter 0.3s ease,-webkit-backdrop-filter 0.3s ease';function onS(){var y=window.scrollY||window.pageYOffset;if(y>th){nb.style.background=fb;nb.style.backdropFilter='blur(12px)';nb.style.webkitBackdropFilter='blur(12px)';nb.style.boxShadow='0 2px 16px rgba(0,0,0,0.12)';if(cm){cm.style.background=fb;cm.style.backdropFilter='blur(12px)';cm.style.webkitBackdropFilter='blur(12px)';}}else{nb.style.background='transparent';nb.style.backdropFilter='none';nb.style.webkitBackdropFilter='none';nb.style.boxShadow='none';if(cm){cm.style.background='transparent';cm.style.backdropFilter='none';cm.style.webkitBackdropFilter='none';}}}window.addEventListener('scroll',onS,{passive:true});onS();})();
+    </script>
+</body>
+</html>

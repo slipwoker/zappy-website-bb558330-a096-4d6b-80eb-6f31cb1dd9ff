@@ -1,0 +1,47 @@
+# Business — Generative Engine Optimization Map
+
+---
+
+## Pages
+
+### Home
+https://example.com
+Dive into alex s johnson&#39;s indie game development blog where quirky mechanics meet unconventional design. Discover the authentic spirit of independent gaming.
+
+### Blog
+https://example.com/blog
+Read katherine s johnson&#39;s unfiltered thoughts on indie game development. Raw tutorials, design experiments, and the messy reality of making games solo.
+
+### About
+https://example.com/about
+Meet alex s johnson, the indie developer crafting games with MDickie-inspired charm. Learn about the unconventional philosophy driving every quirky project.
+
+### Contact
+https://example.com/contact
+Connect with katherine s johnson for collaborations, feedback, or just to chat about indie game development. Your next creative partnership starts here.
+
+## Legal & Policy
+
+### Privacy Policy
+https://example.com/privacy
+Information about how user data is collected, stored, and protected.
+
+### Terms & Conditions
+https://example.com/terms
+Legal terms describing service usage, rights, and policies.
+
+### Accessibility Statement
+https://example.com/accessibility
+Information about WCAG compliance and accessibility features.
+
+---
+
+# Business Context (for LLM understanding)
+
+## About Business
+---
+
+# Additional Resources
+
+- **Sitemap**: https://example.com/sitemap.xml
+- **Robots.txt**: https://example.com/robots.txt
